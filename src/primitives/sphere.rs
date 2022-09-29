@@ -1,13 +1,19 @@
 use crate::*;
+use std::borrow::Borrow;
 
 pub struct Sphere {
     centre: Vec3d,
     radius: f64,
+    material: Box<dyn Material>,
 }
 
 impl Sphere {
-    pub const fn new(centre: Vec3d, radius: f64) -> Self {
-        Self { centre, radius }
+    pub const fn new(centre: Vec3d, radius: f64, material: Box<dyn Material>) -> Self {
+        Self {
+            centre,
+            radius,
+            material,
+        }
     }
 }
 
@@ -31,9 +37,9 @@ impl Hittable for Sphere {
             }
             let point = ray.at(t);
             let normal = (point - self.centre) / self.radius;
-            let mut hit_record = HitRecord::new(point, normal, t);
+            let mut hit_record = HitRecord::new(point, normal, t, self.material.borrow());
             hit_record.set_face_normal(ray, normal);
-            Some(HitRecord::new(point, normal, t))
+            Some(hit_record)
         }
     }
 }

@@ -1,18 +1,20 @@
 use crate::*;
 
-pub struct HitRecord {
-    point: Vec3d,
-    normal: Vec3d,
-    t: f64,
-    front_face: bool,
+pub struct HitRecord<'a> {
+    pub point: Vec3d,
+    pub normal: Vec3d,
+    pub t: f64,
+    pub material: &'a dyn Material,
+    pub front_face: bool,
 }
 
-impl HitRecord {
-    pub const fn new(point: Vec3d, normal: Vec3d, t: f64) -> Self {
+impl<'a> HitRecord<'a> {
+    pub const fn new(point: Vec3d, normal: Vec3d, t: f64, material: &'a dyn Material) -> Self {
         Self {
             point,
             normal,
             t,
+            material,
             front_face: false,
         }
     }
@@ -75,9 +77,20 @@ impl Ray {
         self.origin + self.direction * t
     }
 
-    pub fn ray_colour<T: Hittable>(&self, hittable: &T) -> Colour {
-        if let Some(hit_result) = hittable.hit(self, 0.0, f64::INFINITY) {
-            return (hit_result.normal + Colour::new(1.0, 1.0, 1.0)) * 0.5;
+    pub fn ray_colour<T: Hittable>(&self, hittable: &T, depth: u32) -> Colour {
+        if let Some(hit_result) = hittable.hit(self, 1.0e-6, f64::INFINITY) {
+            return if depth > 0 {
+                if let Some(scatter_record) = hit_result.material.scatter(self, &hit_result) {
+                    Colour::multiply_colour(
+                        scatter_record.attenuation,
+                        scatter_record.scattered.ray_colour(hittable, depth - 1),
+                    )
+                } else {
+                    Colour::new(0.0, 0.0, 0.0)
+                }
+            } else {
+                Colour::new(0.0, 0.0, 0.0)
+            };
         }
 
         let unit_direction = self.direction.normalise();
