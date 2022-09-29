@@ -20,17 +20,17 @@ mod utils;
 
 const ASPECT_RATIO: f64 = 3.0 / 2.0;
 const IMAGE_WIDTH: u32 = 1200;
-const IMAGE_HEIGHT: u32 = (IMAGE_WIDTH / ASPECT_RATIO) as u32;
-const SAMPLES_PER_PIXEL: u32 = 100;
+const IMAGE_HEIGHT: u32 = (IMAGE_WIDTH as f64 / ASPECT_RATIO) as u32;
+const SAMPLES_PER_PIXEL: u32 = 1;
 const SAMPLE_RANGE: f64 = 0.5;
-const MAX_DEPTH: u32 = 25;
+const MAX_DEPTH: u32 = 2;
 
 fn main() -> std::io::Result<()> {
     let mut rng = rand::thread_rng();
 
     let world = random_world();
 
-    let look_from = Vec3d::new(3.10, 3.0, 2.0);
+    let look_from = Vec3d::new(13.0, 2.0, 3.0);
     let look_at = Vec3d::new(0.0, 0.0, 0.0);
     let up_vector = Vec3d::new(0.0, 1.0, 0.0);
     let dist_to_focus = 10.0;
@@ -43,7 +43,7 @@ fn main() -> std::io::Result<()> {
 
     for y in 0..IMAGE_HEIGHT {
         for x in 0..IMAGE_WIDTH {
-            if ((y * IMAGE_WIDTH + x) % 1000) == 0 {
+            if ((y * IMAGE_WIDTH + x) % (IMAGE_HEIGHT * IMAGE_WIDTH / 100)) == 0 {
                 println!(
                     "{}%",
                     ((y * IMAGE_WIDTH + x) * 100) / (IMAGE_HEIGHT * IMAGE_WIDTH)
@@ -113,6 +113,24 @@ fn random_world() -> HittableList {
             }
         }
     }
+
+    world.add(Box::new(Sphere::new(
+        Vec3d::new(0.0, 1.0, 0.0),
+        1.0,
+        Box::new(Dielectric::new(1.5)),
+    )));
+
+    world.add(Box::new(Sphere::new(
+        Vec3d::new(-4.0, 1.0, 0.0),
+        1.0,
+        Box::new(Lambertian::new(Vec3d::new(0.4, 0.2, 0.1))),
+    )));
+
+    world.add(Box::new(Sphere::new(
+        Vec3d::new(4.0, 1.0, 0.0),
+        1.0,
+        Box::new(Metal::new(Vec3d::new(0.7, 0.6, 0.5), 0.0)),
+    )));
 
     world
 }
