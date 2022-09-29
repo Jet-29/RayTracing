@@ -20,7 +20,7 @@ mod utils;
 
 const ASPECT_RATIO: f64 = 3.0 / 2.0;
 const IMAGE_WIDTH: u32 = 1200;
-const IMAGE_HEIGHT: u32 = (400.0 / ASPECT_RATIO) as u32;
+const IMAGE_HEIGHT: u32 = (IMAGE_WIDTH / ASPECT_RATIO) as u32;
 const SAMPLES_PER_PIXEL: u32 = 100;
 const SAMPLE_RANGE: f64 = 0.5;
 const MAX_DEPTH: u32 = 25;
